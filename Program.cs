@@ -3,13 +3,6 @@ using System.Collections.Generic;
 
 namespace OOP3
 {
-    //    Реализовать базу данных игроков и методы для работы с ней.
-    //У игрока может быть уникальный номер, ник, уровень, флаг – забанен ли он(флаг - bool).
-    //Реализовать возможность добавления игрока, бана игрока по уникальный номеру,
-    //разбана игрока по уникальный номеру и удаление игрока.
-    //Создание самой БД не требуется, задание выполняется инструментами,
-    //которые вы уже изучили в рамках курса.Но нужен класс, который содержит игроков и её можно назвать "База данных".
-
     class Program
     {
         static void Main(string[] args)
@@ -26,34 +19,34 @@ namespace OOP3
 
                 switch (userInput)
                 {
-                    case "д":///////
+                    case "д":
 
                         menu.AddPlayer();
 
                         break;
-                    case "удалить":
+                    case "у":
 
-
-
-                        break;
-                    case "бан":
-
-
+                        menu.DeletePlayer();
 
                         break;
-                    case "разбан":
+                    case "б":
 
-
+                        menu.BanPlaer();
 
                         break;
-                    case "показать":
+                    case "рб":
 
+                        menu.UnBanPlaer();
 
+                        break;
+                    case "п":
+
+                        menu.ShowBasePlayer();
 
                         break;
                     default:
 
-                        menu.OutputAWarning();
+                        menu.OutputWarning();
 
                         break;
                 }
@@ -63,97 +56,257 @@ namespace OOP3
 
     class Menu
     {
+        private DataBase _dataBase = new DataBase();
+
+        private int _startLevelPlaer = 1;
+        private int _startMoneyPlaer = 50;
+        private bool _startbanned = false;
+
+        public void UnBanPlaer()
+        {
+            Console.WriteLine("Введите номер разблокированного игрока ");
+
+            string keyString = Console.ReadLine();
+            int key;
+
+            if (int.TryParse(keyString, out key))
+            {
+                if (_dataBase.UnBannedPlayer(key) == false)
+                {
+                    Console.WriteLine("Введенный номер игрока отсутствует");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Введенный номер не является числом");
+            }
+
+            ShowBasePlayer();
+        }
+
+        public void BanPlaer()
+        {
+            Console.WriteLine("Введите номер заблокированного игрока ");
+
+            string keyString = Console.ReadLine();
+            int key;
+
+            if (int.TryParse(keyString, out key))
+            {
+                if (_dataBase.BannedPlayer(key) == false)
+                {
+                    Console.WriteLine("Введенный номер игрока отсутствует");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Введенный номер не является числом");
+            }
+
+            ShowBasePlayer();
+        }
+
+        public void ShowBasePlayer()
+        {
+            Console.Clear();
+            OutputHeader();
+
+            List<int> keyList = new List<int>(_dataBase.KeyList());
+
+            Console.WriteLine();
+
+            for (int i = 0; i < keyList.Count; i++)
+            {
+                Player player = _dataBase.GetPlayer(keyList[i]);
+                Console.WriteLine("Номер - " + i + " | " + player.Show());
+            }
+        }
+
+        public void DeletePlayer()
+        {
+            Console.WriteLine("Введите номер удаляемого игрока");
+
+            string keyString = Console.ReadLine();
+            int key;
+
+            if (int.TryParse(keyString, out key))
+            {
+                _dataBase.DeletePlayer(key);
+            }
+            else
+            {
+                Console.WriteLine("Введенный номер не является числом");
+            }
+
+            ShowBasePlayer();
+        }
+
         public void OutputHeader()
         {
             Console.WriteLine("Присутствуют следующие команды");
-            Console.WriteLine("Добавить игрока - добавить");
-            Console.WriteLine("Удалить игрока - удалить");
-            Console.WriteLine("Забанить игрока - бан");
-            Console.WriteLine("разабанить игрока - разбан");
-            Console.WriteLine("Список всех игроков - показать");
+            Console.WriteLine("Добавить игрока - д");
+            Console.WriteLine("Удалить игрока - у");
+            Console.WriteLine("Забанить игрока - б");
+            Console.WriteLine("разабанить игрока - рб");
+            Console.WriteLine("Список всех игроков - п");
         }
 
         public void AddPlayer()
         {
-            BdPlayers bdPlayers = new BdPlayers();
-
             Console.Write("Введите ник игнрока - ");
-            string name = Console.ReadLine();
+            string namePlayer = Console.ReadLine();
 
             bool isContinueCykle = true;
 
             while (isContinueCykle)
             {
-                if (bdPlayers.SearhName(name) == false)
+                if (_dataBase.SearhName(namePlayer) == false)
                 {
-                    int startLevelPlaer = 1;
-                    int level = startLevelPlaer;
-                    int startMoneyPlaer = 50;
-                    int money = startMoneyPlaer;
-                    bool banned = false;
+                    int level = _startLevelPlaer;
+                    int money = _startMoneyPlaer;
+                    bool banned = _startbanned;
 
-                    bdPlayers.Add(name, level, money, banned);
+                    _dataBase.AddPlayer(namePlayer, level, money, banned);
 
                     isContinueCykle = false;
                 }
                 else
                 {
                     Console.WriteLine("Имя уже занято выберите другое - ");
+                    namePlayer = Console.ReadLine();
                 }
-
             }
-
+            ShowBasePlayer();
         }
 
-        public void OutputAWarning()
+        public void OutputWarning()
         {
             Console.WriteLine("Введена не верная команда");
         }
-
-        public void OutputCardsPlayer(Queue<string> cardsPlaer)
-        {
-            Console.WriteLine("\nВы выбрали карты");
-            foreach (string card in cardsPlaer)
-            {
-                Console.WriteLine(card);
-            }
-        }
-
-        public void OutputCardsPlayer(int sumCards)
-        {
-            Console.WriteLine("Ваши очки = " + sumCards);
-        }
     }
 
-    class BdPlayers
+    class DataBase
     {
-       private Dictionary<int, Player> _playerBd = new Dictionary<int, Player>();
+        private Dictionary<int, Player> _dataBase = new Dictionary<int, Player>();
+
+        public bool UnBannedPlayer(int key)
+        {
+            bool isValidKey = _dataBase.ContainsKey(key);
+
+            if (isValidKey)
+            {
+                Player player = GetPlayer(key);
+
+                player.UnBanned();
+            }
+            else
+            {
+                isValidKey = false;
+            }
+
+            return isValidKey;
+        }
+
+        public bool BannedPlayer(int key)
+        {
+            bool isValidKey = _dataBase.ContainsKey(key);
+
+            if (isValidKey)
+            {
+                Player player = GetPlayer(key);
+
+                player.Banned();
+            }
+            else
+            {
+                isValidKey = false;
+            }
+
+            return isValidKey;
+        }
+
+        public List<int> KeyList()
+        {
+            List<int> keyList = new List<int>();
+
+            foreach (int key in _dataBase.Keys)
+            {
+                keyList.Add(key);
+            }
+
+            return keyList;
+        }
 
         public bool SearhName(string name)
         {
             bool thereIsName = false;
 
-            for (int i = 0; i < _playerBd.Count; i++)
+            for (int i = 1; i <= _dataBase.Count; i++)
             {
-                if (name == _playerBd[i].NamePlayer())
+                if (ContainsKey(i))
                 {
-                    thereIsName = true;
+                    if (name == _dataBase[i].Name())
+                    {
+                        thereIsName = true;
+                        break;
+                    }
                 }
+
             }
             return thereIsName;
         }
-        
-        public void Add(string name, int level, int money, bool banned)
+
+        public bool ContainsKey(int key)
+        {
+            return _dataBase.ContainsKey(key);
+        }
+
+        public bool DeletePlayer(int key)
+        {
+            bool isValidKey = _dataBase.ContainsKey(key);
+
+            if (isValidKey)
+            {
+                _dataBase.Remove(key);
+            }
+            else
+            {
+                isValidKey = false;
+            }
+
+            return isValidKey;
+        }
+
+        public int Count()
+        {
+            return _dataBase.Count;
+        }
+
+        public Player GetPlayer(int key)
+        {
+            Player player;
+
+            _dataBase.TryGetValue(key, out player);
+
+            return player;
+        }
+
+        public void AddPlayer(string name, int level, int money, bool banned)
         {
             Player player = new Player(name, level, money, banned);
 
-            int count = _playerBd.Count;
+            int count = _dataBase.Count;
+            for (int i = 1; i < count; i++)
+            {
+                if (_dataBase.ContainsKey(i) == false)
+                {
+                    count = i;
+                    break;
+                }
+            }
 
-            _playerBd.Add(count + 1, player);
+            _dataBase.Add(count, player);
         }
-
-
-
     }
 
     class Player
@@ -163,6 +316,9 @@ namespace OOP3
         private int _money;
         private bool _banned;
 
+        public Player()
+        { }
+
         public Player(string name, int level, int money, bool banned)
         {
             _name = name;
@@ -171,9 +327,36 @@ namespace OOP3
             _banned = banned;
         }
 
-        public string NamePlayer()
+        public void UnBanned()
+        {
+            _banned = false;
+        }
+
+        public void Banned()
+        {
+            _banned = true;
+        }
+
+        public string Name()
         {
             return _name;
+        }
+
+        public string Show()
+        {
+            string ban;
+
+            if (_banned == true)
+            {
+                ban = "Забанен";
+            }
+            else
+            {
+                ban = "Не забанен";
+            }
+            string plaer = "Имя - " + _name + "  " + "Уровень - " + _level + "  " + "Золота - " + _money + "  " + "Статус - " + ban;
+
+            return plaer;
         }
     }
 }
