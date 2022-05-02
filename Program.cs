@@ -176,11 +176,11 @@ namespace OOP3
 
     class DataBase
     {
-        private List<Player> _player = new List<Player>();
+        private List<Player> _players = new List<Player>();
 
         public bool UnBannedPlayer(int key)
         {
-            bool isValidKey = _player.Count >= key;
+            bool isValidKey = _players.Count >= key;
 
             if (isValidKey)
             {
@@ -193,7 +193,7 @@ namespace OOP3
 
         public bool IsBannedPlayer(int key)
         {
-            bool isValidKey = _player.Count >= key;
+            bool isValidKey = _players.Count >= key;
 
             if (isValidKey)
             {
@@ -207,17 +207,17 @@ namespace OOP3
 
         public int GetKeyList()
         {
-            return _player.Count;
+            return _players.Count;
         }
 
         public bool SearhName(string name)
         {
             bool thereIsName = false;
-            if (_player.Count != 0)
+            if (_players.Count != 0)
             {
-                for (int i = 0; i < _player.Count; i++)
+                for (int i = 0; i < _players.Count; i++)
                 {
-                    if (_player[i].Name == name)
+                    if (_players[i].Name == name)
                     {
                         thereIsName = true;
                         break;
@@ -230,22 +230,22 @@ namespace OOP3
 
         public void DeletePlayer(int key)
         {
-            if (_player.Count >= key)
+            if (_players.Count >= key)
             {
-                _player.RemoveAt(key);
+                _players.RemoveAt(key);
             }
         }
 
         public Player GetPlayer(int key)
         {
-            return _player[key];
+            return _players[key];
         }
 
         public void AddPlayer(string name, int level, int money, bool banned)
         {
             Player player = new Player(name, level, money, banned);
 
-            _player.Add(player);
+            _players.Add(player);
         }
     }
 
