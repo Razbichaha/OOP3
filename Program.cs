@@ -7,9 +7,9 @@ namespace OOP3
     {
         static void Main(string[] args)
         {
-            Menu menu = new Menu();
+            DatabaseManagement databaseManagement = new DatabaseManagement();
 
-            menu.OutputHeader();
+            databaseManagement.OutputHeader();
 
             bool isContinueCycle = true;
 
@@ -21,32 +21,32 @@ namespace OOP3
                 {
                     case "д":
 
-                        menu.AddPlayer();
+                        databaseManagement.AddPlayer();
 
                         break;
                     case "у":
 
-                        menu.DeletePlayer();
+                        databaseManagement.DeletePlayer();
 
                         break;
                     case "б":
 
-                        menu.BanPlaer();
+                        databaseManagement.BanPlaer();
 
                         break;
                     case "рб":
 
-                        menu.UnBanPlaer();
+                        databaseManagement.UnBanPlaer();
 
                         break;
                     case "п":
 
-                        menu.ShowBasePlayer();
+                        databaseManagement.ShowBasePlayer();
 
                         break;
                     default:
 
-                        menu.OutputWarning();
+                        databaseManagement.OutputWarning();
 
                         break;
                 }
@@ -54,7 +54,7 @@ namespace OOP3
         }
     }
 
-    class Menu
+    class DatabaseManagement
     {
         private DataBase _dataBase = new DataBase();
 
@@ -88,9 +88,8 @@ namespace OOP3
             Console.WriteLine("Введите номер заблокированного игрока ");
 
             string keyString = Console.ReadLine();
-            int key;
 
-            if (int.TryParse(keyString, out key))
+            if (int.TryParse(keyString, out int key))
             {
                 if (_dataBase.IsBannedPlayer(key) == false)
                 {
@@ -110,13 +109,12 @@ namespace OOP3
             Console.Clear();
             OutputHeader();
 
-            List<int> keyList = new List<int>(_dataBase.GetKeyList());
-
             Console.WriteLine();
+            int length = _dataBase.GetKeyList();
 
-            for (int i = 0; i < keyList.Count; i++)
+            for (int i = 0; i < length; i++)
             {
-                Player player = _dataBase.GetPlayer(keyList[i]);
+                Player player = _dataBase.GetPlayer(i);
                 Console.WriteLine("Номер - " + i + " | " + player.Show());
             }
         }
@@ -126,9 +124,8 @@ namespace OOP3
             Console.WriteLine("Введите номер удаляемого игрока");
 
             string keyString = Console.ReadLine();
-            int key;
 
-            if (int.TryParse(keyString, out key))
+            if (int.TryParse(keyString, out int key))
             {
                 _dataBase.DeletePlayer(key);
             }
@@ -166,7 +163,7 @@ namespace OOP3
             else
             {
                 Console.WriteLine("Имя уже занято выберите другое - ");
-                namePlayer = "";
+
             }
             ShowBasePlayer();
         }
@@ -179,21 +176,16 @@ namespace OOP3
 
     class DataBase
     {
-        private Dictionary<int, Player> _dataBase = new Dictionary<int, Player>();
+        private List<Player> _player = new List<Player>();
 
         public bool UnBannedPlayer(int key)
         {
-            bool isValidKey = _dataBase.ContainsKey(key);
+            bool isValidKey = _player.Count >= key;
 
             if (isValidKey)
             {
                 Player player = GetPlayer(key);
-
                 player.UnBanned();
-            }
-            else
-            {
-                isValidKey = false;
             }
 
             return isValidKey;
@@ -201,7 +193,7 @@ namespace OOP3
 
         public bool IsBannedPlayer(int key)
         {
-            bool isValidKey = _dataBase.ContainsKey(key);
+            bool isValidKey = _player.Count >= key;
 
             if (isValidKey)
             {
@@ -209,87 +201,61 @@ namespace OOP3
 
                 player.Banned();
             }
-            else
-            {
-                isValidKey = false;
-            }
 
             return isValidKey;
         }
 
-        public List<int> GetKeyList()
+        public int GetKeyList()
         {
-            List<int> keyList = new List<int>();
-
-            foreach (int key in _dataBase.Keys)
-            {
-                keyList.Add(key);
-            }
-
-            return keyList;
+            return _player.Count;
         }
 
         public bool SearhName(string name)
         {
             bool thereIsName = false;
-
-            for (int i = 1; i <= _dataBase.Count; i++)
+            if (_player.Count != 0)
             {
-                if (_dataBase.ContainsKey(i))
+                for (int i = 0; i < _player.Count; i++)
                 {
-                    if (name == _dataBase[i].Name)
+                    if (_player[i].Name == name)
                     {
                         thereIsName = true;
                         break;
                     }
                 }
             }
+
             return thereIsName;
         }
 
         public void DeletePlayer(int key)
         {
-            bool isValidKey = _dataBase.ContainsKey(key);
-
-            if (isValidKey)
+            if (_player.Count >= key)
             {
-                _dataBase.Remove(key);
+                _player.RemoveAt(key);
             }
         }
 
         public Player GetPlayer(int key)
         {
-            Player player;
-
-            _dataBase.TryGetValue(key, out player);
-
-            return player;
+            return _player[key];
         }
 
         public void AddPlayer(string name, int level, int money, bool banned)
         {
             Player player = new Player(name, level, money, banned);
 
-            int count = _dataBase.Count;
-            for (int i = 1; i < count; i++)
-            {
-                if (_dataBase.ContainsKey(i) == false)
-                {
-                    count = i;
-                    break;
-                }
-            }
-
-            _dataBase.Add(count, player);
+            _player.Add(player);
         }
     }
 
     class Player
     {
-        public string Name { get; private set; }
         private int _level;
         private int _money;
         private bool _banned;
+
+        public string Name { get; private set; }
 
         public Player(string name, int level, int money, bool banned)
         {
