@@ -67,9 +67,8 @@ namespace OOP3
             Console.WriteLine("Введите номер разблокированного игрока ");
 
             string keyString = Console.ReadLine();
-            int key;
 
-            if (int.TryParse(keyString, out key))
+            if (int.TryParse(keyString, out int key))
             {
                 if (_dataBase.UnBannedPlayer(key) == false)
                 {
@@ -93,7 +92,7 @@ namespace OOP3
 
             if (int.TryParse(keyString, out key))
             {
-                if (_dataBase.BannedPlayer(key) == false)
+                if (_dataBase.IsBannedPlayer(key) == false)
                 {
                     Console.WriteLine("Введенный номер игрока отсутствует");
                 }
@@ -111,7 +110,7 @@ namespace OOP3
             Console.Clear();
             OutputHeader();
 
-            List<int> keyList = new List<int>(_dataBase.KeyList());
+            List<int> keyList = new List<int>(_dataBase.GetKeyList());
 
             Console.WriteLine();
 
@@ -156,25 +155,18 @@ namespace OOP3
             Console.Write("Введите ник игнрока - ");
             string namePlayer = Console.ReadLine();
 
-            bool isContinueCykle = true;
-
-            while (isContinueCykle)
+            if (_dataBase.SearhName(namePlayer) == false)
             {
-                if (_dataBase.SearhName(namePlayer) == false)
-                {
-                    int level = _startLevelPlaer;
-                    int money = _startMoneyPlaer;
-                    bool banned = _startbanned;
+                int level = _startLevelPlaer;
+                int money = _startMoneyPlaer;
+                bool banned = _startbanned;
 
-                    _dataBase.AddPlayer(namePlayer, level, money, banned);
-
-                    isContinueCykle = false;
-                }
-                else
-                {
-                    Console.WriteLine("Имя уже занято выберите другое - ");
-                    namePlayer = Console.ReadLine();
-                }
+                _dataBase.AddPlayer(namePlayer, level, money, banned);
+            }
+            else
+            {
+                Console.WriteLine("Имя уже занято выберите другое - ");
+                namePlayer = "";
             }
             ShowBasePlayer();
         }
@@ -207,7 +199,7 @@ namespace OOP3
             return isValidKey;
         }
 
-        public bool BannedPlayer(int key)
+        public bool IsBannedPlayer(int key)
         {
             bool isValidKey = _dataBase.ContainsKey(key);
 
@@ -225,7 +217,7 @@ namespace OOP3
             return isValidKey;
         }
 
-        public List<int> KeyList()
+        public List<int> GetKeyList()
         {
             List<int> keyList = new List<int>();
 
@@ -243,25 +235,19 @@ namespace OOP3
 
             for (int i = 1; i <= _dataBase.Count; i++)
             {
-                if (ContainsKey(i))
+                if (_dataBase.ContainsKey(i))
                 {
-                    if (name == _dataBase[i].Name())
+                    if (name == _dataBase[i].Name)
                     {
                         thereIsName = true;
                         break;
                     }
                 }
-
             }
             return thereIsName;
         }
 
-        public bool ContainsKey(int key)
-        {
-            return _dataBase.ContainsKey(key);
-        }
-
-        public bool DeletePlayer(int key)
+        public void DeletePlayer(int key)
         {
             bool isValidKey = _dataBase.ContainsKey(key);
 
@@ -269,17 +255,6 @@ namespace OOP3
             {
                 _dataBase.Remove(key);
             }
-            else
-            {
-                isValidKey = false;
-            }
-
-            return isValidKey;
-        }
-
-        public int Count()
-        {
-            return _dataBase.Count;
         }
 
         public Player GetPlayer(int key)
@@ -311,17 +286,14 @@ namespace OOP3
 
     class Player
     {
-        private string _name;
+        public string Name { get; private set; }
         private int _level;
         private int _money;
         private bool _banned;
 
-        public Player()
-        { }
-
         public Player(string name, int level, int money, bool banned)
         {
-            _name = name;
+            Name = name;
             _level = level;
             _money = money;
             _banned = banned;
@@ -337,24 +309,10 @@ namespace OOP3
             _banned = true;
         }
 
-        public string Name()
-        {
-            return _name;
-        }
-
         public string Show()
         {
-            string ban;
-
-            if (_banned == true)
-            {
-                ban = "Забанен";
-            }
-            else
-            {
-                ban = "Не забанен";
-            }
-            string plaer = "Имя - " + _name + "  " + "Уровень - " + _level + "  " + "Золота - " + _money + "  " + "Статус - " + ban;
+            string ban = _banned == true ? "Забанен" : "Не забанен";
+            string plaer = "Имя - " + Name + "  " + "Уровень - " + _level + "  " + "Золота - " + _money + "  " + "Статус - " + ban;
 
             return plaer;
         }
